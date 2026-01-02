@@ -15,7 +15,7 @@
 
         <!-- Splash / Launcher -->
         <activity
-            android:name="com.abel.mobilin.Landing.SplashActivity"
+            android:name="com.abel.mobilin.SplashActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -25,20 +25,20 @@
 
         <!-- Landing -->
         <activity
-            android:name="com.abel.mobilin.Landing.WelcomeActivity"
+            android:name="com.abel.mobilin.WelcomeActivity"
             android:exported="false" />
 
         <!-- Login -->
         <activity
-            android:name="com.abel.mobilin.Login.LoginActivity"
+            android:name="com.abel.mobilin.LoginActivity"
             android:exported="false" />
 
         <activity
-            android:name="com.abel.mobilin.Login.RegisterActivity"
+            android:name="com.abel.mobilin.RegisterActivity"
             android:exported="false" />
 
         <activity
-            android:name="com.abel.mobilin.Login.ForgotPasswordActivity"
+            android:name="com.abel.mobilin.ForgotPasswordActivity"
             android:exported="false" />
 
         <!-- Main -->
