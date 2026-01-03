@@ -58,7 +58,7 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.firebase:firebase-storage")
 
-    // --- JSON Converter (TAMBAHAN PERBAIKAN ERROR GSON) ---
+    // --- JSON Converter ---
     implementation("com.google.code.gson:gson:2.10.1")
 
     // --- Glide (Gambar) ---

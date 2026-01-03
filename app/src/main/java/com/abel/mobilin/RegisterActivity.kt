@@ -22,7 +22,12 @@ class RegisterActivity : AppCompatActivity() {
 
     private lateinit var auth: FirebaseAuth
     private val CAMERA_PERMISSION_CODE = 100
+
     private var isScanningKtp = true
+
+    // Penanda apakah foto sudah diambil
+    private var isKtpUploaded = false
+    private var isSimUploaded = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,8 +44,9 @@ class RegisterActivity : AppCompatActivity() {
 
         val btnUploadKTP = findViewById<Button>(R.id.btnUploadKTP)
         val btnUploadSIM = findViewById<Button>(R.id.btnUploadSIM)
-        val imgKTP = findViewById<ImageView>(R.id.imgKTP)
-        val imgSIM = findViewById<ImageView>(R.id.imgSIM)
+
+        // Kita tidak perlu mendefinisikan imgKTP/imgSIM di sini karena diakses di launcher
+        // tapi jika ingin akses untuk validasi visual bisa didefinisikan.
 
         val btnRegister = findViewById<Button>(R.id.btnRegister)
         val tvLogin = findViewById<TextView>(R.id.tvLogin)
@@ -57,26 +63,80 @@ class RegisterActivity : AppCompatActivity() {
 
         btnRegister.setOnClickListener {
 
-            val username = etUsername.text.toString()
+            val username = etUsername.text.toString().trim()
             val email = etEmail.text.toString().trim()
-            val password = etPassword.text.toString()
-            val confirmPassword = etConfirmPassword.text.toString()
-            val nik = etNIK.text.toString()
-            val sim = etSIM.text.toString()
+            val password = etPassword.text.toString().trim()
+            val confirmPassword = etConfirmPassword.text.toString().trim()
+            val nik = etNIK.text.toString().trim()
+            val sim = etSIM.text.toString().trim()
 
+            // VALIDASI LENGKAP
             when {
-                username.isEmpty() -> etUsername.error = "Username tidak boleh kosong"
-                email.isEmpty() -> etEmail.error = "Email tidak boleh kosong"
-                !Patterns.EMAIL_ADDRESS.matcher(email).matches() ->
+                // 1. Cek Username
+                username.isEmpty() -> {
+                    etUsername.error = "Username wajib diisi"
+                    etUsername.requestFocus()
+                }
+
+                // 2. Cek Email
+                email.isEmpty() -> {
+                    etEmail.error = "Email wajib diisi"
+                    etEmail.requestFocus()
+                }
+                !Patterns.EMAIL_ADDRESS.matcher(email).matches() -> {
                     etEmail.error = "Format email tidak valid"
-                !isPasswordValid(password) ->
-                    etPassword.error = "Password min 8 karakter, huruf besar, kecil, dan angka"
-                password != confirmPassword ->
-                    etConfirmPassword.error = "Password tidak sama"
-                nik.length != 16 ->
+                    etEmail.requestFocus()
+                }
+
+                // 3. Cek Password
+                password.isEmpty() -> {
+                    etPassword.error = "Password wajib diisi"
+                    etPassword.requestFocus()
+                }
+                !isPasswordValid(password) -> {
+                    etPassword.error = "Password min 8 karakter, harus ada huruf besar, kecil, dan angka"
+                    etPassword.requestFocus()
+                }
+
+                // 4. Cek Konfirmasi Password
+                confirmPassword.isEmpty() -> {
+                    etConfirmPassword.error = "Konfirmasi password wajib diisi"
+                    etConfirmPassword.requestFocus()
+                }
+                password != confirmPassword -> {
+                    etConfirmPassword.error = "Password tidak cocok"
+                    etConfirmPassword.requestFocus()
+                }
+
+                // 5. Cek NIK
+                nik.isEmpty() -> {
+                    etNIK.error = "NIK wajib diisi (Scan KTP)"
+                    etNIK.requestFocus()
+                }
+                nik.length != 16 -> {
                     etNIK.error = "NIK harus 16 digit"
-                sim.length < 10 ->
+                    etNIK.requestFocus()
+                }
+
+                // 6. Cek SIM
+                sim.isEmpty() -> {
+                    etSIM.error = "Nomor SIM wajib diisi (Scan SIM)"
+                    etSIM.requestFocus()
+                }
+                sim.length < 10 -> {
                     etSIM.error = "Nomor SIM tidak valid"
+                    etSIM.requestFocus()
+                }
+
+                // 7. Cek Apakah Foto Sudah Diupload
+                !isKtpUploaded -> {
+                    Toast.makeText(this, "Harap ambil foto KTP terlebih dahulu", Toast.LENGTH_SHORT).show()
+                }
+                !isSimUploaded -> {
+                    Toast.makeText(this, "Harap ambil foto SIM terlebih dahulu", Toast.LENGTH_SHORT).show()
+                }
+
+                // Jika semua lolos, lakukan register
                 else -> registerUser(username, email, password, nik, sim)
             }
         }
@@ -86,6 +146,11 @@ class RegisterActivity : AppCompatActivity() {
         }
     }
 
+    // Fungsi Validasi Password (Helper)
+    private fun isPasswordValid(password: String): Boolean {
+        return Regex("^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d).{8,}$").matches(password)
+    }
+
     private fun registerUser(
         username: String,
         email: String,
@@ -93,6 +158,8 @@ class RegisterActivity : AppCompatActivity() {
         nik: String,
         sim: String
     ) {
+        // Tampilkan loading jika perlu (opsional)
+
         auth.createUserWithEmailAndPassword(email, password)
             .addOnSuccessListener {
                 val userId = auth.currentUser?.uid ?: return@addOnSuccessListener
@@ -102,7 +169,9 @@ class RegisterActivity : AppCompatActivity() {
                     "email" to email,
                     "nik" to nik,
                     "sim_a" to sim,
-                    "uid" to userId
+                    "uid" to userId,
+                    // Opsional: Simpan status bahwa user ini belum diverifikasi admin jika ada logic itu
+                    "isVerified" to false
                 )
 
                 FirebaseFirestore.getInstance()
@@ -111,20 +180,23 @@ class RegisterActivity : AppCompatActivity() {
                     .set(userMap)
                     .addOnSuccessListener { sendVerificationEmail() }
                     .addOnFailureListener {
-                        Toast.makeText(this, "Gagal simpan data", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "Gagal simpan data ke database", Toast.LENGTH_SHORT).show()
                     }
             }
             .addOnFailureListener {
-                Toast.makeText(this, it.localizedMessage, Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Register Gagal: ${it.localizedMessage}", Toast.LENGTH_SHORT).show()
             }
     }
 
     private fun sendVerificationEmail() {
         auth.currentUser?.sendEmailVerification()
             ?.addOnSuccessListener {
-                Toast.makeText(this, "Registrasi berhasil. Cek email.", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "Registrasi berhasil. Silakan cek email untuk verifikasi.", Toast.LENGTH_LONG).show()
                 auth.signOut()
                 finish()
+            }
+            ?.addOnFailureListener {
+                Toast.makeText(this, "Gagal mengirim email verifikasi.", Toast.LENGTH_SHORT).show()
             }
     }
 
@@ -150,11 +222,15 @@ class RegisterActivity : AppCompatActivity() {
                         setImageBitmap(it)
                         visibility = View.VISIBLE
                     }
+                    // Tandai KTP sudah ada
+                    isKtpUploaded = true
                 } else {
                     findViewById<ImageView>(R.id.imgSIM).apply {
                         setImageBitmap(it)
                         visibility = View.VISIBLE
                     }
+                    // Tandai SIM sudah ada
+                    isSimUploaded = true
                 }
                 scanTextFromBitmap(it)
             }
@@ -181,7 +257,7 @@ class RegisterActivity : AppCompatActivity() {
                         findViewById<EditText>(R.id.etNIK).setText(nik)
                         Toast.makeText(this, "NIK berhasil discan", Toast.LENGTH_SHORT).show()
                     } else {
-                        Toast.makeText(this, "NIK tidak terbaca", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "Gagal membaca NIK otomatis, silakan ketik manual", Toast.LENGTH_SHORT).show()
                     }
                 } else {
                     val sim = Regex("\\d{10,14}").find(cleanText)?.value
@@ -189,16 +265,12 @@ class RegisterActivity : AppCompatActivity() {
                         findViewById<EditText>(R.id.etSIM).setText(sim)
                         Toast.makeText(this, "SIM berhasil discan", Toast.LENGTH_SHORT).show()
                     } else {
-                        Toast.makeText(this, "SIM tidak terbaca", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "Gagal membaca SIM otomatis, silakan ketik manual", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
             .addOnFailureListener {
-                Toast.makeText(this, "OCR gagal", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "OCR gagal memproses gambar", Toast.LENGTH_SHORT).show()
             }
     }
-}
-
-private fun isPasswordValid(password: String): Boolean {
-    return Regex("^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d).{8,}$").matches(password)
 }
