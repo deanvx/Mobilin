@@ -7,12 +7,12 @@ plugins {
 
 android {
     namespace = "com.abel.mobilin"
-    compileSdk = 35  // Update ke 35 (minimal requirement)
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.abel.mobilin"
         minSdk = 24
-        targetSdk = 34  // Bisa tetap 34, tidak perlu diubah
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
@@ -44,39 +44,32 @@ android {
 }
 
 dependencies {
-    // Android UI & Core - gunakan versi yang kompatibel
-    implementation("androidx.core:core-ktx:1.13.1")  // Versi stabil untuk compileSdk 35
+    // --- Android UI & Core ---
+    implementation("androidx.core:core-ktx:1.13.1")
     implementation(libs.androidx.appcompat)
-    implementation(libs.material)
-    implementation("androidx.activity:activity-ktx:1.9.3")  // Versi stabil
-    implementation(libs.androidx.constraintlayout)
     implementation("com.google.android.material:material:1.11.0")
+    implementation("androidx.activity:activity-ktx:1.9.3")
+    implementation(libs.androidx.constraintlayout)
 
-    // Firebase - gunakan satu BOM saja
+    // --- Firebase ---
     implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-database")
     implementation("com.google.firebase:firebase-firestore")
-    implementation(libs.firebase.storage.ktx)
+    implementation("com.google.firebase:firebase-storage")
 
-    // Room - gunakan satu definisi saja
-    val roomVersion = "2.6.1"
-    implementation("androidx.room:room-runtime:$roomVersion")
-    implementation("androidx.room:room-ktx:$roomVersion")
-    kapt("androidx.room:room-compiler:$roomVersion")
+    // --- JSON Converter (TAMBAHAN PERBAIKAN ERROR GSON) ---
+    implementation("com.google.code.gson:gson:2.10.1")
 
-    // Retrofit
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-
-    // Glide - gunakan satu definisi saja
+    // --- Glide (Gambar) ---
     implementation("com.github.bumptech.glide:glide:4.16.0")
     kapt("com.github.bumptech.glide:compiler:4.16.0")
 
-    // Testing
+    // --- Testing ---
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
+    // --- ML Kit ---
     implementation("com.google.mlkit:text-recognition:16.0.0")
 }
