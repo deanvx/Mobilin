@@ -120,7 +120,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
+                android:layout_marginBottom="15dp"
                 android:text="NIK"
                 android:textColor="@android:color/white"
                 android:textStyle="bold" />
@@ -134,8 +134,7 @@
                 android:hint="Masukkan NIK anda"
                 android:inputType="number"
                 android:maxLength="16"
-                android:padding="12dp"
-                android:textColor="@android:color/white" />
+                android:padding="12dp" />
 
             <!-- BUTTON SCAN KTP -->
             <Button
@@ -143,13 +142,49 @@
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:layout_marginBottom="16dp"
-                android:backgroundTint="#1F3C88"
+                android:backgroundTint="#FFFFFF"
                 android:text="Scan KTP"
-                android:textColor="#FFFFFF" />
+                android:textColor="#0F466E" />
 
             <!-- IMAGE KTP -->
             <ImageView
                 android:id="@+id/imgKTP"
+                android:layout_width="match_parent"
+                android:layout_height="180dp"
+                android:layout_marginBottom="16dp"
+                android:scaleType="centerCrop"
+                android:visibility="gone" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="15dp"
+                android:text="Nomor SIM A"
+                android:textColor="@android:color/white"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/etSIM"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginBottom="25dp"
+                android:background="@drawable/bg_input"
+                android:hint="Masukkan Nomor SIM A"
+                android:inputType="number"
+                android:maxLength="12"
+                android:padding="12dp" />
+
+            <Button
+                android:id="@+id/btnUploadSIM"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginBottom="16dp"
+                android:backgroundTint="#FFFFFF"
+                android:text="Scan SIM A"
+                android:textColor="#0F466E" />
+
+            <ImageView
+                android:id="@+id/imgSIM"
                 android:layout_width="match_parent"
                 android:layout_height="180dp"
                 android:layout_marginBottom="16dp"
