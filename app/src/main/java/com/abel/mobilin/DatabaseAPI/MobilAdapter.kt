@@ -2,69 +2,70 @@ package com.abel.mobilin.adapter
 
 import android.content.Intent
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
+import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
+import com.abel.mobilin.BookingActivity
+import com.abel.mobilin.DatabaseAPI.Mobil
 import com.abel.mobilin.R
-import com.abel.mobilin.model.HistoryItem
-import com.abel.mobilin.ui.BookingDetailActivity
+import com.abel.mobilin.databinding.ItemMobilBinding
 import com.bumptech.glide.Glide
+import java.text.NumberFormat
+import java.util.Locale
 
-class HistoryAdapter(private val list: List<HistoryItem>) :
-    RecyclerView.Adapter<HistoryAdapter.HistoryViewHolder>() {
+class MobilAdapter(private val listMobil: ArrayList<Mobil>) :
+    RecyclerView.Adapter<MobilAdapter.MobilViewHolder>() {
 
-    class HistoryViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val ivCarImage: ImageView = itemView.findViewById(R.id.ivCarImage)
-        val tvCarName: TextView = itemView.findViewById(R.id.tvCarName)
-        val tvCarType: TextView = itemView.findViewById(R.id.tvCarType)
-        val tvRentalDate: TextView = itemView.findViewById(R.id.tvRentalDate)
-        val tvTotalAmount: TextView = itemView.findViewById(R.id.tvTotalAmount)
-        val tvBookingCode: TextView = itemView.findViewById(R.id.tvBookingCode)
-        val btnDetail: TextView = itemView.findViewById(R.id.btnDetail)
+    inner class MobilViewHolder(val binding: ItemMobilBinding) :
+        RecyclerView.ViewHolder(binding.root)
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MobilViewHolder {
+        val binding = ItemMobilBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return MobilViewHolder(binding)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HistoryViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_history, parent, false)
-        return HistoryViewHolder(view)
-    }
+    override fun onBindViewHolder(holder: MobilViewHolder, position: Int) {
+        val mobil = listMobil[position]
 
-    override fun onBindViewHolder(holder: HistoryViewHolder, position: Int) {
-        val item = list[position]
-        holder.tvCarName.text = item.carName
-        holder.tvCarType.text = item.carType
-        holder.tvRentalDate.text = item.rentalDate
-        holder.tvTotalAmount.text = item.totalAmount
-        holder.tvBookingCode.text = item.bookingCode
+        with(holder.binding) {
+            // Set data TextView
+            tvNamaMobil.text = mobil.nama ?: "Nama Tidak Tersedia"
+            tvTransmisi.text = mobil.transmisi ?: "-"
+            tvSeat.text = mobil.seat ?: "0 Seat"
 
-        Glide.with(holder.itemView.context)
-            .load(item.carImage)
-            .placeholder(R.drawable.ic_launcher_background)
-            .into(holder.ivCarImage)
+            // Format harga ke Rupiah
+            val localeID = Locale("id", "ID")
+            val numberFormat = NumberFormat.getCurrencyInstance(localeID)
+            numberFormat.maximumFractionDigits = 0
+            val hargaRp = numberFormat.format(mobil.harga ?: 0)
+            tvHargaSewa.text = "$hargaRp/Hari"
 
-        // Klik Detail → buka BookingDetailActivity
-        holder.btnDetail.setOnClickListener {
-            val dates = item.rentalDate.split(" - ")
-            val startDate = dates.getOrNull(0) ?: "-"
-            val endDate = dates.getOrNull(1) ?: "-"
+            // Load foto pakai Glide
+            Glide.with(holder.itemView.context)
+                .load(mobil.foto)
+                .placeholder(R.drawable.ic_launcher_background)
+                .error(R.drawable.ic_launcher_background)
+                .centerCrop()
+                .into(imgMobil)
 
-            val context = holder.itemView.context
-            val intent = Intent(context, BookingDetailActivity::class.java).apply {
-                putExtra("CAR_NAME", item.carName)
-                putExtra("CAR_TYPE", item.carType)
-                putExtra("START_DATE", startDate)
-                putExtra("END_DATE", endDate)
-                putExtra("DURATION", "3 Hari") // bisa diubah hitung otomatis
-                putExtra("TOTAL_AMOUNT", item.totalAmount)
-                putExtra("BOOKING_CODE", item.bookingCode)
-                putExtra("CAR_IMAGE", item.carImage)
+            // Listener tombol Pesan
+            btnPesan.setOnClickListener {
+                // Tampilkan Toast
+                Toast.makeText(
+                    holder.itemView.context,
+                    "Kamu memilih ${mobil.nama}",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                // Buka BookingActivity
+                val intent = Intent(holder.itemView.context, BookingActivity::class.java)
+                intent.putExtra("namaMobil", mobil.nama ?: "")
+                intent.putExtra("hargaMobil", mobil.harga ?: 0)
+                intent.putExtra("fotoMobil", mobil.foto ?: "")
+                holder.itemView.context.startActivity(intent)
             }
-            context.startActivity(intent)
         }
     }
 
-
-    override fun getItemCount(): Int = list.size
+    override fun getItemCount(): Int = listMobil.size
 }

@@ -57,6 +57,7 @@ dependencies {
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-database")
     implementation("com.google.firebase:firebase-firestore")
+    implementation(libs.firebase.storage.ktx)
 
     // Room - gunakan satu definisi saja
     val roomVersion = "2.6.1"

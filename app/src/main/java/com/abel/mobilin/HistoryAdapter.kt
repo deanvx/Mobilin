@@ -1,14 +1,15 @@
 package com.abel.mobilin.adapter
 
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.abel.mobilin.R
 import com.abel.mobilin.model.HistoryItem
+import com.abel.mobilin.ui.BookingDetailActivity
 import com.bumptech.glide.Glide
 
 class HistoryAdapter(private val list: List<HistoryItem>) :
@@ -43,10 +44,27 @@ class HistoryAdapter(private val list: List<HistoryItem>) :
             .placeholder(R.drawable.ic_launcher_background)
             .into(holder.ivCarImage)
 
+        // Klik Detail → buka BookingDetailActivity
         holder.btnDetail.setOnClickListener {
-            Toast.makeText(holder.itemView.context, "Detail clicked", Toast.LENGTH_SHORT).show()
+            val dates = item.rentalDate.split(" - ")
+            val startDate = dates.getOrNull(0) ?: "-"
+            val endDate = dates.getOrNull(1) ?: "-"
+
+            val context = holder.itemView.context
+            val intent = Intent(context, BookingDetailActivity::class.java).apply {
+                putExtra("CAR_NAME", item.carName)
+                putExtra("CAR_TYPE", item.carType)
+                putExtra("START_DATE", startDate)
+                putExtra("END_DATE", endDate)
+                putExtra("DURATION", "3 Hari") // bisa diubah hitung otomatis
+                putExtra("TOTAL_AMOUNT", item.totalAmount)
+                putExtra("BOOKING_CODE", item.bookingCode)
+                putExtra("CAR_IMAGE", item.carImage)
+            }
+            context.startActivity(intent)
         }
     }
+
 
     override fun getItemCount(): Int = list.size
 }
